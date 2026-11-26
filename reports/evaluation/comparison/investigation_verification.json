@@ -1,0 +1,15 @@
+{
+  "case_id": "CASE-218-FINAL-DEMO",
+  "dataset_type": "CONTROLLED_SYNTHETIC_DEMONSTRATION",
+  "total_events": 12,
+  "flagged_events": 9,
+  "contextual_groups": 9,
+  "log_gaps": 0,
+  "timeline_items": 12,
+  "processing_time_ms": 7.741,
+  "timeline_and_rule_tests_passed": 2,
+  "timeline_and_rule_tests_total": 2,
+  "status": "DEMONSTRATION_VERIFIED",
+  "real_ransomware_incident_validation": false,
+  "manual_time_saving_verified": false
+}

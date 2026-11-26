@@ -1,0 +1,80 @@
+{
+  "generated_at_utc": "2026-11-25T11:32:30.589395+00:00",
+  "analysis_type": "External hybrid NLP and rule analysis",
+  "datasets": [
+    {
+      "dataset": "HackTheBox",
+      "source": "data/external/htb/processed/hackthebox_logjammer.csv",
+      "parsed_records": 4252,
+      "parsing_errors": 0,
+      "combined_counts": {
+        "ML_ONLY_CANDIDATE": 2361,
+        "NO_INDICATOR_UNVERIFIED": 1727,
+        "ML_AND_RULE_CANDIDATE": 16,
+        "INSUFFICIENT_VOCABULARY": 148
+      },
+      "rule_distribution": {
+        "RULE-EVT-002": 16
+      },
+      "shap_status_counts": {
+        "SUCCESS": 2377
+      },
+      "shap_explanation_records": 2377,
+      "reference_records": [
+        {
+          "original_row": 2879,
+          "event_code": "104",
+          "source_sha256": "59d84aefd723cde89cbe6436d6156ccbb53ff427db025219e8f5bab8640d63ed",
+          "model_prediction": "suspicious",
+          "suspicious_score": 0.692,
+          "vocabulary_match": true,
+          "rule_ids": "RULE-EVT-002",
+          "combined_status": "ML_AND_RULE_CANDIDATE",
+          "shap_status": "SUCCESS"
+        }
+      ],
+      "prediction_file": "hackthebox_combined_predictions.csv",
+      "shap_file": "hackthebox_shap_explanations.json",
+      "independent_metrics": "NOT_EVALUATED",
+      "ground_truth_available": false,
+      "elapsed_seconds": 18.801
+    },
+    {
+      "dataset": "DFRWS",
+      "source": "data/external/dfrws/processed/dfrws_annotations.csv",
+      "parsed_records": 51,
+      "parsing_errors": 0,
+      "combined_counts": {
+        "INSUFFICIENT_VOCABULARY": 40,
+        "ML_ONLY_CANDIDATE": 11
+      },
+      "rule_distribution": {},
+      "shap_status_counts": {
+        "SUCCESS": 11
+      },
+      "shap_explanation_records": 11,
+      "reference_records": [],
+      "prediction_file": "dfrws_combined_predictions.csv",
+      "shap_file": "dfrws_shap_explanations.json",
+      "independent_metrics": "NOT_EVALUATED",
+      "ground_truth_available": false,
+      "elapsed_seconds": 0.107
+    }
+  ],
+  "silrad": {
+    "nlp_status": "INCOMPATIBLE_NUMERIC_FEATURES",
+    "separate_model_status": "EVALUATED",
+    "evaluation_file": "reports/evaluation/silrad/silrad_evaluation_summary.json",
+    "task": "Ransomware versus goodware classification"
+  },
+  "independent_anti_forensic_evaluation": "NOT_EVALUATED",
+  "limitations": [
+    "Candidate detections are not confirmed attacks.",
+    "Independent record-level labels are unavailable.",
+    "DFRWS contains investigator annotations.",
+    "HTB reference rule was updated after inspection.",
+    "SHAP explains model contributions, not rule logic.",
+    "Displayed SHAP values cover active tokens only.",
+    "SILRAD metrics are not anti-forensic metrics."
+  ]
+}

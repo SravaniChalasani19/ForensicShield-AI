@@ -1,0 +1,10 @@
+category,total_records,rule_correct,rule_rate,nlp_correct,nlp_rate,hybrid_correct,hybrid_rate
+benign,6,6,100.0,6,100.0,6,100.0
+clear_event_logs,3,3,100.0,3,100.0,3,100.0
+clear_history,3,3,100.0,3,100.0,3,100.0
+clear_linux_logs,4,3,75.0,3,75.0,4,100.0
+delete_shadow_copies,2,2,100.0,1,50.0,2,100.0
+disable_security_tools,4,4,100.0,4,100.0,4,100.0
+file_deletion,3,2,66.67,3,100.0,3,100.0
+obfuscated_commands,2,1,50.0,2,100.0,2,100.0
+timestomping,2,2,100.0,2,100.0,2,100.0

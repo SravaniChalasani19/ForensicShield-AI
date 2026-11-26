@@ -1,0 +1,15 @@
+{
+  "total_tests": 8,
+  "passed": 8,
+  "failed": 0,
+  "results": {
+    "lowercase": true,
+    "whitespace": true,
+    "control_characters": true,
+    "empty_input": true,
+    "invalid_timestamp": true,
+    "utc_conversion": true,
+    "missing_timezone_rejection": true,
+    "partial_timestamp_rejection": true
+  }
+}

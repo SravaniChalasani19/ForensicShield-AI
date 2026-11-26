@@ -1,0 +1,102 @@
+{
+  "evaluation_type": "SYNTHETIC_CATEGORY_WISE_BINARY_DETECTION",
+  "total_records": 29,
+  "results": [
+    {
+      "category": "benign",
+      "total_records": 6,
+      "rule_correct": 6,
+      "rule_rate": 100.0,
+      "nlp_correct": 6,
+      "nlp_rate": 100.0,
+      "hybrid_correct": 6,
+      "hybrid_rate": 100.0
+    },
+    {
+      "category": "clear_event_logs",
+      "total_records": 3,
+      "rule_correct": 3,
+      "rule_rate": 100.0,
+      "nlp_correct": 3,
+      "nlp_rate": 100.0,
+      "hybrid_correct": 3,
+      "hybrid_rate": 100.0
+    },
+    {
+      "category": "clear_history",
+      "total_records": 3,
+      "rule_correct": 3,
+      "rule_rate": 100.0,
+      "nlp_correct": 3,
+      "nlp_rate": 100.0,
+      "hybrid_correct": 3,
+      "hybrid_rate": 100.0
+    },
+    {
+      "category": "clear_linux_logs",
+      "total_records": 4,
+      "rule_correct": 3,
+      "rule_rate": 75.0,
+      "nlp_correct": 3,
+      "nlp_rate": 75.0,
+      "hybrid_correct": 4,
+      "hybrid_rate": 100.0
+    },
+    {
+      "category": "delete_shadow_copies",
+      "total_records": 2,
+      "rule_correct": 2,
+      "rule_rate": 100.0,
+      "nlp_correct": 1,
+      "nlp_rate": 50.0,
+      "hybrid_correct": 2,
+      "hybrid_rate": 100.0
+    },
+    {
+      "category": "disable_security_tools",
+      "total_records": 4,
+      "rule_correct": 4,
+      "rule_rate": 100.0,
+      "nlp_correct": 4,
+      "nlp_rate": 100.0,
+      "hybrid_correct": 4,
+      "hybrid_rate": 100.0
+    },
+    {
+      "category": "file_deletion",
+      "total_records": 3,
+      "rule_correct": 2,
+      "rule_rate": 66.67,
+      "nlp_correct": 3,
+      "nlp_rate": 100.0,
+      "hybrid_correct": 3,
+      "hybrid_rate": 100.0
+    },
+    {
+      "category": "obfuscated_commands",
+      "total_records": 2,
+      "rule_correct": 1,
+      "rule_rate": 50.0,
+      "nlp_correct": 2,
+      "nlp_rate": 100.0,
+      "hybrid_correct": 2,
+      "hybrid_rate": 100.0
+    },
+    {
+      "category": "timestomping",
+      "total_records": 2,
+      "rule_correct": 2,
+      "rule_rate": 100.0,
+      "nlp_correct": 2,
+      "nlp_rate": 100.0,
+      "hybrid_correct": 2,
+      "hybrid_rate": 100.0
+    }
+  ],
+  "limitations": [
+    "Small synthetic test dataset.",
+    "Not multiclass technique classification.",
+    "Independent external validation unavailable.",
+    "Record alignment assumes original test order."
+  ]
+}
