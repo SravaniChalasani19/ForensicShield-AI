@@ -1,0 +1,112 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Database files & SQLite runtime storage
+*.db
+*.sqlite
+*.sqlite3
+data/forensicshield.db
+data/forensicshield.db-journal
+data/forensicshield.db-wal
+data/forensicshield.db-shm
+
+# Private runtime evidence and generated reports
+data/originals/*
+!data/originals/.gitkeep
+reports/generated/*
+!reports/generated/.gitkeep
+data/derived/*
+!data/derived/.gitkeep
+data/live_feed/*
+!data/live_feed/.gitkeep
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor settings
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Local test coverage and temporary scratch files
+.coverage
+htmlcov/
+.pytest_cache/
+*.log
+scratch/
+tmp/
+temp/
+
+# Additional public repository exclusions
+.env.*
+!.env.example
+
+*.db-*
+*.sqlite-*
+*.sqlite3-*
+*.zip
+*.evtx
+*.pdf
+
+data/external/
+data/originals/
+data/derived/
+data/live_feed/
+data/manifests/
+data/fixtures/
+data/synthetic/
+
+reports/CASE-*.pdf
+reports/generated/
+reports/evaluation/external/*.csv
+reports/evaluation/comparison/record_comparison.csv
+
+tests/
+scripts/
+
+!data/fixtures/
+data/fixtures/*
+!data/fixtures/public_demo_logs.json
+
+# Historical documentation pending public review
+CHANGELOG.md
+DATASETS.md
+RESEARCH_TRACEABILITY.md
+SECURITY.md
