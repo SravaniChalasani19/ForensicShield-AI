@@ -1,0 +1,44 @@
+{
+  "model_version": "fs-rf-v1.0",
+  "architecture": "TF-IDF + RandomForestClassifier",
+  "trained_at_utc": "2026-11-25T04:59:47.086284+00:00",
+  "pipeline_sha256": "14cd1670c79f600649b19eeea9214a8b3d9a03aabf47e6437df8cc1b4d517bad",
+  "total_samples": 143,
+  "train_samples": 114,
+  "test_samples": 29,
+  "classes": [
+    "normal",
+    "suspicious"
+  ],
+  "vocabulary_size": 155,
+  "hyperparameters": {
+    "n_estimators": 100,
+    "random_state": 42,
+    "class_weight": "balanced",
+    "ngram_range": [
+      1,
+      2
+    ],
+    "max_features": 5000,
+    "min_df": 2
+  },
+  "metrics": {
+    "accuracy": 0.931,
+    "precision": 1.0,
+    "recall": 0.913,
+    "f1_score": 0.9545,
+    "confusion_matrix": [
+      [
+        6,
+        0
+      ],
+      [
+        2,
+        21
+      ]
+    ]
+  },
+  "provenance_source": "SYNTHETIC_BENCHMARK_CORPUS_v1.0",
+  "data_category": "SYNTHETIC_BENCHMARK_CORPUS",
+  "evaluation_notice": "Metrics evaluated on 29 held-out synthetic test records. External dataset files are present, but their authenticity and independent validation remain unverified. Synthetic benchmark metrics must not be interpreted as real-world performance. Similar-template leakage has not yet been ruled out."
+}
