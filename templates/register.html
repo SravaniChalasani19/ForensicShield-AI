@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Register | ForensicShield AI</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+
+<body>
+
+    <main class="auth-card">
+
+        <div class="brand">
+            <div class="brand-icon">&#128737;</div>
+            <h1>ForensicShield AI</h1>
+            <p>Digital Forensic Investigation System</p>
+        </div>
+
+        <h2>Create Account</h2>
+
+        {% if error %}
+        <div class="error-message" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST"
+              action="{{ url_for('auth.register') }}">
+
+            <input type="hidden"
+                   name="_csrf_token"
+                   value="{{ csrf_token }}">
+
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+
+                <input type="text"
+                       id="full_name"
+                       name="full_name"
+                       placeholder="Enter your full name"
+                       autocomplete="name"
+                       maxlength="100"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+
+                <input type="email"
+                       id="email"
+                       name="email"
+                       placeholder="Enter your email"
+                       autocomplete="email"
+                       maxlength="254"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+
+                <input type="password"
+                       id="password"
+                       name="password"
+                       placeholder="Create a strong password"
+                       autocomplete="new-password"
+                       minlength="12"
+                       maxlength="128"
+                       required>
+
+                <div class="password-hint">
+                    Use at least 12 characters.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">
+                    Confirm Password
+                </label>
+
+                <input type="password"
+                       id="confirm_password"
+                       name="confirm_password"
+                       placeholder="Re-enter your password"
+                       autocomplete="new-password"
+                       minlength="12"
+                       maxlength="128"
+                       required>
+            </div>
+
+            <button type="submit">Create Account</button>
+
+        </form>
+
+        <div class="auth-link">
+            Already have an account?
+            <a href="{{ url_for('auth.login') }}">
+                Sign In
+            </a>
+        </div>
+
+        <div class="footer">
+            ForensicShield AI v1.0.0<br>
+            Digital Evidence. Intelligent Investigation.
+        </div>
+
+    </main>
+
+</body>
+</html>

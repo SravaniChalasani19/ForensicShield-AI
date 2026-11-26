@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Login | ForensicShield AI</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+
+<body>
+
+    <main class="auth-card">
+
+        <div class="brand">
+            <div class="brand-icon">&#128737;</div>
+            <h1>ForensicShield AI</h1>
+            <p>Digital Forensic Investigation System</p>
+        </div>
+
+        <h2>Welcome Back</h2>
+
+        {% if error %}
+        <div class="error-message" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST"
+              action="{{ url_for('auth.login') }}">
+
+            <input type="hidden"
+                   name="_csrf_token"
+                   value="{{ csrf_token }}">
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+
+                <input type="email"
+                       id="email"
+                       name="email"
+                       placeholder="Enter your email"
+                       autocomplete="email"
+                       maxlength="254"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+
+                <input type="password"
+                       id="password"
+                       name="password"
+                       placeholder="Enter your password"
+                       autocomplete="current-password"
+                       maxlength="128"
+                       required>
+            </div>
+
+            <button type="submit">Secure Login</button>
+
+        </form>
+
+        <div class="auth-link">
+            Don't have an account?
+            <a href="{{ url_for('auth.register') }}">
+                Create Account
+            </a>
+        </div>
+
+        <div class="footer">
+            ForensicShield AI v1.0.0<br>
+            Digital Evidence. Intelligent Investigation.
+        </div>
+
+    </main>
+
+</body>
+</html>
