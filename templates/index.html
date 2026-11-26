@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ app_name }} — NLP-Based Anti-forensic Investigation</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="logo-shield">🛡️</div>
+      <div>
+        <h1 class="brand-title">{{ app_name }}</h1>
+        <p class="brand-subtitle">{{ app_subtitle }} | <span class="tag-version">v{{ system_version }}</span></p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="model-badge {% if model_ready %}badge-ready{% else %}badge-pending{% endif %}">
+        {% if model_ready %}● Model Ready ({{ model_version }}){% else %}○ Model Not Trained{% endif %}
+      </span>
+      <button class="btn btn-primary" onclick="showModal('modal-new-case')">+ New Case</button>
+      <button class="btn btn-outline" onclick="verifyAuditChain()">⛓️ Verify Audit</button>
+      <span class="model-badge">
+        {{ current_user.full_name }}
+      </span>
+
+      <form method="POST"
+            action="{{ url_for('auth.logout') }}"
+            style="margin: 0;">
+
+        <input type="hidden"
+               name="_csrf_token"
+               value="{{ csrf_token }}">
+
+        <button type="submit" class="btn btn-outline">
+          Logout
+        </button>
+      </form>
+    </div>
+  </header>
+
+  <!-- Legal & Scientific Caution Banner -->
+  <div class="legal-notice-bar">
+    <span class="notice-icon">⚖️</span>
+    <span class="notice-text"><b>LEGAL ADMISSIBILITY NOTICE:</b> {{ legal_disclaimer }}</span>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" data-tab="tab-dashboard" onclick="switchTab('tab-dashboard')">📊 Dashboard</button>
+    <button class="tab-btn" data-tab="tab-evidence" onclick="switchTab('tab-evidence')">📁 Evidence Intake</button>
+    <button class="tab-btn" data-tab="tab-explorer" onclick="switchTab('tab-explorer')">🔍 Log Explorer</button>
+    <button class="tab-btn" data-tab="tab-timeline" onclick="switchTab('tab-timeline')">⏱️ Investigation Timeline</button>
+    <button class="tab-btn" data-tab="tab-live" onclick="switchTab('tab-live')">🔴 Live & Replay Monitor</button>
+    <button class="tab-btn" data-tab="tab-reports" onclick="switchTab('tab-reports')">📄 Reports & Custody</button>
+    <button class="tab-btn" data-tab="tab-datasets" onclick="switchTab('tab-datasets')">📦 Datasets & Feasibility</button>
+    <button class="tab-btn" data-tab="tab-evaluation" onclick="switchTab('tab-evaluation')">📈 Empirical Evaluation</button>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- TAB 1: DASHBOARD -->
+    <section id="tab-dashboard" class="tab-content active">
+      <!-- Summary Metrics Tiles -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Registered Cases</div>
+          <div class="metric-value" id="stat-cases">{{ case_count }}</div>
+          <div class="metric-sub">Active investigations</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Imported Evidence Files</div>
+          <div class="metric-value" id="stat-evidence">{{ evidence_count }}</div>
+          <div class="metric-sub">SHA-256 hashed originals</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Canonical Log Records</div>
+          <div class="metric-value" id="stat-logs">{{ log_count }}</div>
+          <div class="metric-sub">Normalized event corpus</div>
+        </div>
+        <div class="metric-card metric-card-flagged">
+          <div class="metric-label">Flagged Anti-Forensics</div>
+          <div class="metric-value" id="stat-flagged">{{ flagged_count }}</div>
+          <div class="metric-sub">ML + Rule candidates</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Forensic PDF Reports</div>
+          <div class="metric-value" id="stat-reports">{{ report_count }}</div>
+          <div class="metric-sub">Tamper-evident exports</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Synthetic Evaluation Status</div>
+          <div class="metric-value status-pill {% if eval_status.evaluated %}pill-evaluated{% else %}pill-pending{% endif %}">
+            {% if eval_status.evaluated %}Evaluated{% else %}Not Evaluated{% endif %}
+          </div>
+          <div class="metric-sub">External validation: {{ eval_status.external_benchmark_status }}</div>
+        </div>
+      </div>
+
+      <!-- Quick Action / Active Case Banner -->
+      <div class="active-case-banner">
+        <div class="banner-info">
+          <span class="banner-tag">ACTIVE CASE WORKSPACE</span>
+          <h2 id="active-case-title">Select or create a case to begin post-attack investigation</h2>
+          <p id="active-case-meta">Case ID: <code id="active-case-id-display">None</code> | Examiner: <span id="active-case-examiner">N/A</span></p>
+        </div>
+        <div class="banner-buttons">
+          <button class="btn btn-success" id="btn-run-analysis" onclick="runCaseAnalysis()" disabled>⚡ Run Detection Model</button>
+          <button class="btn btn-primary" onclick="showModal('modal-upload-evidence')">📤 Upload Evidence</button>
+          <button class="btn btn-secondary" id="btn-gen-report" onclick="generateCaseReport()" disabled>📑 Generate PDF</button>
+        </div>
+      </div>
+
+      <!-- Recent Cases Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Recent Investigation Cases</h3>
+          <button class="btn btn-sm btn-outline" onclick="loadDashboardCases()">🔄 Refresh</button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table" id="table-recent-cases">
+            <thead>
+              <tr>
+                <th>Case ID</th>
+                <th>Title</th>
+                <th>Lead Examiner</th>
+                <th>Created (UTC)</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-recent-cases">
+              {% if recent_cases %}
+                {% for c in recent_cases %}
+                  <tr>
+                    <td><code>{{ c.case_id }}</code></td>
+                    <td><b>{{ c.case_title }}</b></td>
+                    <td>{{ c.examiner }}</td>
+                    <td>{{ c.created_at[:19] }}</td>
+                    <td><span class="badge badge-active">{{ c.status }}</span></td>
+                    <td>
+                      <button class="btn btn-xs btn-primary" onclick="selectCase('{{ c.case_id }}', '{{ c.case_title }}', '{{ c.examiner }}')">Open Case</button>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="6" class="text-center empty-state">
+                    No cases created yet. Click <b>"+ New Case"</b> to initialize your first investigation.
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pipeline Architecture Architecture Overview -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Integrated 8-Stage Investigation Pipeline</h3>
+        </div>
+        <div class="pipeline-flow">
+          <div class="pipe-step"><span class="step-num">1</span> Intake Evidence</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step"><span class="step-num">2</span> SHA-256 Hash</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step"><span class="step-num">3</span> Normalize Logs</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step"><span class="step-num">4</span> TF-IDF N-Grams</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step"><span class="step-num">5</span> Random Forest</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step"><span class="step-num">6</span> SHAP Attributions</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step"><span class="step-num">7</span> Timeline Context</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step"><span class="step-num">8</span> ReportLab PDF</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: EVIDENCE INTAKE -->
+    <section id="tab-evidence" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h3>Evidence Intake & Cryptographic Chain of Custody</h3>
+          <button class="btn btn-primary" onclick="showModal('modal-upload-evidence')">+ Import Evidence File</button>
+        </div>
+        <p class="section-desc">
+          Original artifacts are preserved in a designated evidence directory with SHA-256 integrity verification.
+          Every file is SHA-256 hashed immediately upon intake before any transformation, parsing, or tokenization.
+        </p>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Evidence ID</th>
+                <th>Case ID</th>
+                <th>Original Filename</th>
+                <th>Format</th>
+                <th>Size (Bytes)</th>
+                <th>SHA-256 Hash Digest</th>
+                <th>Ingested At (UTC)</th>
+                <th>Parse Status</th>
+                <th>Events</th>
+                <th>Integrity Check</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-evidence-list">
+              <tr>
+                <td colspan="10" class="text-center empty-state">Select an active case to view associated evidence artifacts.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: LOG EXPLORER -->
+    <section id="tab-explorer" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h3>Canonical Forensic Log Explorer</h3>
+          <div class="explorer-actions">
+            <button class="btn btn-sm btn-outline" onclick="exportEventsCSV()">📥 Export Derived CSV</button>
+            <button class="btn btn-sm btn-success" onclick="runCaseAnalysis()">⚡ Run Detection</button>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-bar">
+          <input type="text" id="filter-search" class="form-control" placeholder="Search commands, users, hosts, or event IDs..." onkeyup="handleSearchKey(event)">
+          <select id="filter-label" class="form-control" onchange="loadCaseEvents()">
+            <option value="ALL">All Classifications</option>
+            <option value="SUSPICIOUS">Flagged Suspicious Only</option>
+            <option value="NORMAL">Normal Events Only</option>
+          </select>
+          <label class="checkbox-label">
+            <input type="checkbox" id="filter-rules-only" onchange="loadCaseEvents()">
+            <span>Rule Hits Only</span>
+          </label>
+          <button class="btn btn-secondary" onclick="loadCaseEvents()">Apply Filters</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Event ID</th>
+                <th>Timestamp (UTC)</th>
+                <th>Host</th>
+                <th>User</th>
+                <th>Event Code</th>
+                <th>Raw Message / Command</th>
+                <th>Prediction</th>
+                <th>Confidence</th>
+                <th>Rule Flags</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-events-list">
+              <tr>
+                <td colspan="10" class="text-center empty-state">No events loaded. Select a case with ingested evidence.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-bar">
+          <span id="pagination-info">Showing 0 of 0 events</span>
+          <div class="pagination-controls">
+            <button class="btn btn-xs btn-outline" id="btn-prev-page" onclick="changePage(-1)" disabled>« Previous</button>
+            <span id="current-page-num">1</span>
+            <button class="btn btn-xs btn-outline" id="btn-next-page" onclick="changePage(1)" disabled>Next »</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: INVESTIGATION TIMELINE -->
+    <section id="tab-timeline" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h3>Post-Attack Investigation Timeline & Log Continuity Analysis</h3>
+          <div>
+            <label class="form-label-inline">Context Window (mins):</label>
+            <select id="timeline-window" class="form-control form-control-sm" onchange="loadCaseTimeline()">
+              <option value="5">± 5 minutes</option>
+              <option value="15" selected>± 15 minutes</option>
+              <option value="30">± 30 minutes</option>
+              <option value="60">± 60 minutes</option>
+            </select>
+            <button class="btn btn-sm btn-outline" onclick="loadCaseTimeline()">🔄 Refresh Timeline</button>
+          </div>
+        </div>
+        
+        <div class="alert-box alert-info">
+          <b>Investigative Principle:</b> Temporal proximity indicates investigative correlation, not proven causation or attack sequence without independent corroborating evidence.
+        </div>
+
+        <!-- Silent Log Gaps Container -->
+        <div id="container-log-gaps" class="log-gaps-section">
+          <!-- Injected via JavaScript -->
+        </div>
+
+        <!-- Timeline Events Stream -->
+        <div id="container-timeline-stream" class="timeline-stream">
+          <div class="empty-state">Select an active case to reconstruct chronological forensic context.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: REAL-TIME INGESTION & INCREMENTAL REPLAY MONITOR (SECTION 18.1) -->
+    <section id="tab-live" class="tab-content">
+      <div class="alert-box alert-warning">
+        <strong>Public Web Edition Notice</strong>
+        <p>
+          Live and Replay Monitoring is restricted
+          in the public web edition for security
+          and user privacy.
+          This feature remains available in the
+          original local application.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3>Real-Time Log Ingestion & Incremental Replay Monitor</h3>
+            <small style="color: var(--text-muted);">Dual-Mode Ingestion (Section 18.1): Real-time authorized directory polling & incremental simulated replay.</small>
+          </div>
+          <div class="live-status-indicator" style="display: flex; align-items: center; gap: 8px;">
+            <span id="live-indicator-dot" class="pulse-indicator pulse-stopped"></span>
+            <span id="live-status-text" class="status-pill pill-pending">STOPPED</span>
+          </div>
+        </div>
+
+        <div class="alert-box alert-warning">
+          <b>⚠️ PROVISIONAL AUTOMATED FINDINGS:</b> All alerts generated during real-time or replay monitoring are automated indicators requiring human forensic validation. Under Section 18.1 of the Blueprint, this mode operates non-destructively on authorized files without executing ransomware or altering source data.
+        </div>
+
+        <!-- Controls Card -->
+        <div class="live-controls-panel">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label><b>Ingestion Source Mode:</b></label>
+              <select id="live-mode-select" class="form-control" onchange="handleLiveModeChange()">
+                <option value="REPLAY" selected>Simulated Incremental Replay (Controlled Test Fixture)</option>
+                <option value="DIRECTORY">Authorized Local Directory Watcher (data/live_feed/)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label><b>Active Case Destination:</b></label>
+              <input type="text" id="live-target-case" class="form-control" placeholder="CASE-LIVE-STREAM">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label><b>Streaming Interval (seconds):</b></label>
+              <select id="live-interval-select" class="form-control">
+                <option value="0.5">0.5 seconds (Fast demo)</option>
+                <option value="1.0" selected>1.0 second (Standard)</option>
+                <option value="2.0">2.0 seconds (Detailed review)</option>
+                <option value="5.0">5.0 seconds (Periodic polling)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;" id="group-target-dir">
+              <label><b>Target Directory Path:</b></label>
+              <input type="text" id="live-target-dir" class="form-control" value="data/live_feed">
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <button class="btn btn-success"
+        		   id="btn-live-start"
+       			   disabled>
+    		     Start Ingestion (Restricted)
+	    </button>
+            <button class="btn btn-secondary" id="btn-live-pause" onclick="pauseLiveIngestion()" disabled>⏸ Pause</button>
+            <button class="btn btn-primary" id="btn-live-resume" onclick="resumeLiveIngestion()" disabled>▶ Resume</button>
+            <button class="btn btn-outline" id="btn-live-stop" onclick="stopLiveIngestion()" disabled>⏹ Stop</button>
+            <span id="live-checkpoint-badge" style="margin-left: auto; font-size: 11px; color: var(--text-muted);">Checkpoint: Replay Index 0 | 0 Files Tracked</span>
+          </div>
+        </div>
+
+        <!-- Live Metrics Grid -->
+        <div class="metrics-grid" style="margin-bottom: 20px;">
+          <div class="metric-card">
+            <div class="metric-label">Ingested Events</div>
+            <div class="metric-value" id="live-stat-ingested">0</div>
+            <div class="metric-sub">Deduplicated records</div>
+          </div>
+          <div class="metric-card metric-card-flagged">
+            <div class="metric-label">Provisional Alerts</div>
+            <div class="metric-value" id="live-stat-flagged">0</div>
+            <div class="metric-sub">ML or Rule flagged</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Processing Latency</div>
+            <div class="metric-value"><span id="live-stat-latency">0.0</span> <small style="font-size: 14px;">ms</small></div>
+            <div class="metric-sub">Per-event throughput</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Last Event Time</div>
+            <div class="metric-value" style="font-size: 14px; padding-top: 6px;" id="live-stat-last-time">N/A</div>
+            <div class="metric-sub">UTC timestamp</div>
+          </div>
+        </div>
+
+        <!-- Live Streaming Table -->
+        <div class="card-header" style="margin-top: 10px;">
+          <h4>Recent Ingestion Stream (Live Buffer)</h4>
+          <span class="badge badge-normal" id="live-feed-badge">Buffer: Last 15 events</span>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Event ID</th>
+                <th>UTC Timestamp</th>
+                <th>Host</th>
+                <th>Provider</th>
+                <th>Raw Message / Command</th>
+                <th>Classification</th>
+                <th>Score</th>
+                <th>Heuristic Flags</th>
+                <th>Source Mode</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-live-stream">
+              <tr>
+                <td colspan="9" class="text-center empty-state">Live ingestion monitor is stopped. Click <b>"▶ Start Ingestion"</b> above to stream events.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: REPORTS & AUDIT -->
+    <section id="tab-reports" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h3>Investigator-Ready Forensic PDF Reports</h3>
+          <button class="btn btn-primary" onclick="generateCaseReport()">📑 Generate New Case PDF</button>
+        </div>
+        <p class="section-desc">
+          Structured PDF reports created via ReportLab including case metadata, evidence hash table,
+          model versions, flagged findings, SHAP attribution highlights, timeline context, and append-only audit trail.
+        </p>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Report ID</th>
+                <th>Case ID</th>
+                <th>Filename</th>
+                <th>Generated At (UTC)</th>
+                <th>Lead Examiner</th>
+                <th>Report SHA-256 Digest</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-reports-list">
+              {% if recent_reports %}
+                {% for r in recent_reports %}
+                  <tr>
+                    <td><code>{{ r.report_id }}</code></td>
+                    <td><code>{{ r.case_id }}</code></td>
+                    <td>{{ r.filename }}</td>
+                    <td>{{ r.created_at[:19] }}</td>
+                    <td>{{ r.examiner }}</td>
+                    <td><code class="hash-code">{{ r.sha256_hash }}</code></td>
+                    <td>
+                      <a href="/api/reports/{{ r.report_id }}/download" class="btn btn-xs btn-success" download>⬇️ Download PDF</a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="7" class="text-center empty-state">No PDF reports generated yet. Click <b>"Generate New Case PDF"</b> above.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Append-Only Audit Trail Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Cryptographic Audit Trail (SHA-256 Hash Chaining)</h3>
+          <button class="btn btn-sm btn-outline" onclick="verifyAuditChain()">⛓️ Verify Chain Integrity</button>
+        </div>
+        <div id="audit-verification-banner" class="alert-box alert-success" style="display: none;">
+          <!-- Verification message -->
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Audit ID</th>
+                <th>Action</th>
+                <th>Actor</th>
+                <th>Evidence ID</th>
+                <th>Timestamp (UTC)</th>
+                <th>Previous Entry Hash</th>
+                <th>Entry Hash</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-audit-list">
+              <tr>
+                <td colspan="7" class="text-center empty-state">Select an active case to review its tamper-evident audit ledger.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: DATASETS & FEASIBILITY MATRIX (SECTION 4 & 18.2) -->
+    <section id="tab-datasets" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3>Forensic Challenge & Research Dataset Feasibility Matrix</h3>
+            <small style="color: var(--text-muted);">Empirical verification of accessibility, licensing, ground-truth quality, and schema compatibility (Section 4 & 18.2).</small>
+          </div>
+          <div style="display: flex; gap: 8px;">
+          <button id="btn-feasibility-audit"
+        		class="btn btn-sm btn-outline"
+        		onclick="loadDatasetsAudit(true)">
+    		🔄 Re-run Feasibility Audit
+	  </button>
+            <a href="/data/source_manifest.csv" class="btn btn-sm btn-secondary" download>📥 Download Manifest CSV</a>
+          </div>
+        </div>
+
+        <div class="alert-box alert-info">
+          <b>Academic Feasibility Gate:</b> Local file availability and preliminary compatibility do not establish dataset authenticity. External source provenance, schema compatibility and independent ground truth require further verification.
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Dataset Name</th>
+                <th>Role in Project</th>
+                <th>Format & Schema</th>
+                <th>License & Access</th>
+                <th>Label Availability</th>
+                <th>Compatibility Verdict</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-datasets-matrix">
+              <tr>
+                <td colspan="7" class="text-center empty-state">Loading feasibility audit...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Instructions for External File Deposit -->
+        <div style="margin-top: 24px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+          <h4>📂 Instructions for Depositing Authorized External Forensic Datasets:</h4>
+          <ol style="margin-left: 20px; margin-top: 8px; line-height: 1.8; font-size: 12px; color: var(--text-secondary);">
+            <li><b>HackTheBox Forensics (LogJammer):</b> Place authorized <code>LogJammer.evtx</code> or exported CSV into <code>data/external/htb/</code>. The built-in EVTX and CSV adapters will immediately parse Event ID 1102 and timestomping indicators.</li>
+            <li><b>DFRWS Forensic Challenges:</b> Download challenge files from <a href="https://dfrws.org/past-challenges/" target="_blank" style="color: var(--accent-cyan);">dfrws.org</a> and deposit syslog or text files into <code>data/external/dfrws/</code>. The regex and text normalizer will process the Linux syslog headers.</li>
+            <li><b>SILRAD (2025):</b> Place the authorized Sysmon CSV into <code>data/external/silrad/</code>. As specified in the Blueprint, SILRAD serves as a supporting ransomware benchmark, not an invented second mandatory main pipeline.</li>
+            <li><b>Software Test Fixtures:</b> Located at <code>data/fixtures/</code> and pre-packaged for instant automated regression tests.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: EMPIRICAL EVALUATION -->
+    <section id="tab-evaluation" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h3>Synthetic Benchmark & External Validation Status</h3>
+          <button class="btn btn-sm btn-secondary" disabled title="Controlled retraining is available through the training script.">🔒 UI Retraining Disabled</button>
+        </div>
+        <div class="alert-box alert-warning">
+          <h4>Scientific Evaluation Status</h4>
+          <p>
+              <b>Evaluation Type:</b>
+              {{ eval_status.evaluation_type | default('NOT_EVALUATED') }}
+          </p>
+          <p>
+              <b>Independent External Validation:</b>
+              {{ eval_status.external_benchmark_status }}
+          </p>
+          <p>{{ eval_status.evaluation_notice | default('') }}</p>
+          <p>{{ eval_status.external_benchmark_message | default('') }}</p>
+        </div>
+        {% if eval_status.evaluated %}
+          <div class="eval-success-banner">
+            <h4>Evaluation Results for: <code>{{ eval_status.dataset_name }}</code></h4>
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-label">Accuracy</div>
+                <div class="metric-value">{{ (eval_status.metrics.accuracy * 100)|round(2) }}%</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Precision (Suspicious)</div>
+                <div class="metric-value">{{ (eval_status.metrics.precision * 100)|round(2) }}%</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Recall (Sensitivity)</div>
+                <div class="metric-value">{{ (eval_status.metrics.recall * 100)|round(2) }}%</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">F1-Score (Suspicious)</div>
+                <div class="metric-value">{{ (eval_status.metrics.f1_score * 100)|round(2) }}%</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">False Positive Rate (FPR)</div>
+                <div class="metric-value">{{ (eval_status.metrics.false_positive_rate * 100)|round(2) }}%</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Evaluated Records</div>
+                <div class="metric-value">{{ eval_status.sample_counts.total }}</div>
+              </div>
+            </div>
+
+            <!-- Confusion Matrix Table -->
+            <div class="confusion-matrix-box">
+              <h4>Confusion Matrix</h4>
+              <table class="cm-table">
+                <tr>
+                  <th></th>
+                  <th>Predicted Normal</th>
+                  <th>Predicted Suspicious</th>
+                </tr>
+                <tr>
+                  <th>Actual Normal</th>
+                  <td class="cm-cell cm-tn">{{ eval_status.metrics.true_negatives }} (TN)</td>
+                  <td class="cm-cell cm-fp">{{ eval_status.metrics.false_positives }} (FP)</td>
+                </tr>
+                <tr>
+                  <th>Actual Suspicious</th>
+                  <td class="cm-cell cm-fn">{{ eval_status.metrics.false_negatives }} (FN)</td>
+                  <td class="cm-cell cm-tp">{{ eval_status.metrics.true_positives }} (TP)</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        {% else %}
+          <div class="alert-box alert-warning">
+            <h4>⚠️ Benchmark Status: NOT EVALUATED (Honest Scientific Fallback)</h4>
+            <p>{{ eval_status.message }}</p>
+            <p><b>Feasibility Policy:</b> Under Section 4.1 of the Final Implementation Blueprint, accuracy and F1 metrics are never fabricated. Evaluation requires real forensic challenge files (e.g. HackTheBox LogJammer, DFRWS challenge logs) with independently verified ground truth.</p>
+            <p><b>Instructions to evaluate:</b> Place compatible challenge files into <code>data/external/htb/</code> or <code>data/external/dfrws/</code> and verify source authenticity, schema compatibility and independent ground truth before evaluation.</p>
+          </div>
+        {% endif %}
+
+        
+<div id="research-results-panel"
+     style="margin-top: 24px;">
+
+  <div class="card">
+    <div class="card-header">
+      <h3>SILRAD Supporting Ransomware Model</h3>
+    </div>
+
+    <p>
+      Separate numeric Random Forest evaluation.
+      These results measure ransomware versus
+      goodware classification, not anti-forensic
+      detection accuracy.
+    </p>
+
+    <div id="silrad-metrics"
+         class="metrics-grid">
+      Loading SILRAD results...
+    </div>
+
+    <div id="silrad-details"
+         style="margin-top: 16px;"></div>
+
+    <div class="alert-box alert-warning"
+         style="margin-top: 16px;">
+      Exact feature overlap was removed.
+      Ransomware family and session independence
+      have not been established.
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 20px;">
+    <div class="card-header">
+      <h3>SILRAD Evaluation and SHAP Graphs</h3>
+    </div>
+
+    <p>
+      SHAP feature importance is based on a
+      reproducible sample of 200 test records.
+    </p>
+
+    <div id="silrad-graphs"
+         style="display:grid;
+                grid-template-columns:
+                repeat(auto-fit,minmax(260px,1fr));
+                gap:16px;">
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 20px;">
+    <div class="card-header">
+      <h3>Feature Ablation and Reliability Analysis</h3>
+    </div>
+
+    <div id="silrad-ablation">
+      Loading ablation results...
+    </div>
+
+    <p style="margin-top:12px;">
+      The reduced-feature experiment uses a
+      different cleaned test population.
+      This is an exploratory reliability analysis,
+      not a controlled comparison on identical records.
+    </p>
+  </div>
+
+  <div class="card" style="margin-top: 20px;">
+    <div class="card-header">
+      <h3>External Forensic Dataset Analysis</h3>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Dataset</th>
+            <th>Records</th>
+            <th>NLP Only</th>
+            <th>NLP + Rule</th>
+            <th>Rule Only</th>
+            <th>No Indicator</th>
+            <th>Insufficient Vocabulary</th>
+            <th>SHAP Success</th>
+          </tr>
+        </thead>
+        <tbody id="external-research-table">
+          <tr>
+            <td colspan="8">Loading results...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="external-reference"
+         style="margin-top:16px;"></div>
+
+    <div class="alert-box alert-warning"
+         style="margin-top:16px;">
+      <b>Independent Anti-forensic Validation:
+         NOT EVALUATED</b>
+      <p>
+        Candidate findings are not confirmed attacks.
+        Independent record-level anti-forensic
+        ground truth remains unavailable.
+        DFRWS contains investigator annotations.
+      </p>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- Dataset Feasibility Manifest Summary -->
+        <h4 style="margin-top: 24px;">Dataset Feasibility & Source Inventory Manifest</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Dataset ID</th>
+                <th>Source Title</th>
+                <th>Local Status</th>
+                <th>Format</th>
+                <th>Ground Truth Provenance</th>
+                <th>Role in Project</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-evaluation-datasets">
+              <tr>
+                  <td colspan="6" class="text-center empty-state">
+                      Loading dataset status...
+                  </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: NEW CASE -->
+  <div id="modal-new-case" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create New Forensic Investigation Case</h3>
+        <button class="modal-close" onclick="closeModal('modal-new-case')">✕</button>
+      </div>
+      <form id="form-new-case" onsubmit="handleCreateCase(event)">
+        <div class="form-group">
+          <label>Case Identifier (Automatically Generated):</label>
+          <input type="text" id="input-case-id"
+       		      class="form-control"
+      		       placeholder="Automatically generated by system"
+      		       readonly>
+        </div>
+        <div class="form-group">
+          <label>Case Title / Incident Name:</label>
+          <input type="text" id="input-case-title"
+           	      class="form-control"
+       		      placeholder="Ransomware Post-attack Investigation - Demonstration"
+       		      maxlength="150"
+      		      required>
+        </div>
+        <div class="form-group">
+          <label>Lead Forensic Examiner:</label>
+          <input type="text" id="input-case-examiner"
+       		      class="form-control"
+      		       value="{{ current_user.full_name }}"
+      	               readonly>
+        </div>
+        <div class="form-group">
+          <label>Case Description & Scope:</label>
+          <textarea id="input-case-desc"
+          		   class="form-control"
+          		   rows="3"
+         		   maxlength="2000"
+          		   placeholder="Enter synthetic investigation case details. Do not include confidential or personal information."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-new-case')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Case Workspace</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: UPLOAD EVIDENCE -->
+  <div id="modal-upload-evidence" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Ingest Approved Demonstration Forensic Evidence</h3>
+        <button class="modal-close" onclick="closeModal('modal-upload-evidence')">✕</button>
+      </div>
+      <form id="form-upload-evidence" onsubmit="handleUploadEvidence(event)">
+        <div class="alert-box alert-info" style="margin-bottom: 14px; font-size: 0.85rem;">
+          🛡️ <b>Public Demonstration Mode:</b> Arbitrary file uploads are disabled for privacy and system safety. Select an approved synthetic demonstration fixture from the verified catalog below.
+        </div>
+        <div class="form-group">
+          <label>Target Case ID:</label>
+          <input type="text" id="upload-target-case-id" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>Select Approved Synthetic Demonstration Fixture:</label>
+          <select id="demo-fixture-select" class="form-control" onchange="handleFixtureSelectChange()"><option value="public_demo_logs">Public Forensic Log Analysis Demo (3 Events - JSON)</option></select>
+          <div id="fixture-details-box" style="margin-top: 8px; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.8rem; color: #334155;">
+            <div><b>Description:</b> <span id="fixture-desc">Educational synthetic sequence demonstrating shadow copy deletion (vssadmin), log clearance (1102, wevtutil), defense evasion, and timestomping.</span></div>
+            <div style="margin-top: 4px;"><b>Expected SHA-256:</b> <code id="fixture-sha" style="font-size: 0.72rem; word-break: break-all;">eaf384174a08c699df7efab182f1a8add4281d30d0bbe21fb1d6bdc972e50cde</code></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Ingesting Examiner:</label>
+          <input type="text" id="upload-examiner"
+       		      class="form-control"
+       		      value="{{ current_user.full_name }}"
+        	 	      readonly>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-upload-evidence')">Cancel</button>
+          <button type="submit" class="btn btn-success" id="btn-submit-upload">Verify SHA-256 & Ingest</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SHAP EXPLANATION -->
+  <div id="modal-shap-explanation" class="modal-overlay">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <h3>Explainable AI (SHAP) Feature Attribution</h3>
+        <button class="modal-close" onclick="closeModal('modal-shap-explanation')">✕</button>
+      </div>
+      <div id="shap-modal-body">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD INVESTIGATOR NOTE -->
+  <div id="modal-add-note" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Record Investigator Review Note</h3>
+        <button class="modal-close" onclick="closeModal('modal-add-note')">✕</button>
+      </div>
+      <form id="form-add-note" onsubmit="handleSaveNote(event)">
+        <input type="hidden" id="note-event-id">
+        <div class="form-group">
+          <label>Event ID:</label>
+          <input type="text" id="note-display-event-id" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>Investigator / Author:</label>
+          <input type="text" id="note-author" class="form-control" value="Forensic Examiner" required>
+        </div>
+        <div class="form-group">
+          <label>Forensic Note / Hypothesis:</label>
+          <textarea id="note-text" class="form-control" rows="4" placeholder="Observed command is consistent with attacker clearing security logs via wevtutil after staging malware..." required></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-add-note')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Immutable Note</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+ 
+  <footer class="app-footer">
+    <div class="footer-content">
+      <span>ForensicShield AI — Digital Forensic Investigation System</span>
+      <span>Engineered with Python, Flask, scikit-learn, SHAP, and ReportLab</span>
+    </div>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
