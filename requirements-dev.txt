@@ -1,0 +1,8 @@
+# ForensicShield AI - Offline Research, Dataset & Self-Hosted WSGI Dependencies
+# Install alongside requirements.txt for offline evaluation scripts or dedicated VPS hosting:
+#   pip install -r requirements.txt -r requirements-dev.txt
+
+pandas>=2.0.0,<=3.1.1
+python-evtx>=0.8.0
+gunicorn>=21.2.0
+waitress>=2.1.2

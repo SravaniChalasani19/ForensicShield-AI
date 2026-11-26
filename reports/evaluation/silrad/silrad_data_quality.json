@@ -1,0 +1,22 @@
+{
+  "original_training_records": 39999,
+  "original_testing_records": 156841,
+  "training_duplicates_removed": 7683,
+  "testing_duplicates_removed": 15540,
+  "conflicting_feature_groups": 4,
+  "training_conflict_records_removed": 4,
+  "testing_conflict_records_removed": 8,
+  "overlapping_test_records_removed": 329,
+  "remaining_feature_overlap": 0,
+  "clean_training_records": 32312,
+  "clean_testing_records": 140964,
+  "input_features": 36,
+  "training_class_distribution": {
+    "0": 31284,
+    "1": 1028
+  },
+  "testing_class_distribution": {
+    "0": 127299,
+    "1": 13665
+  }
+}

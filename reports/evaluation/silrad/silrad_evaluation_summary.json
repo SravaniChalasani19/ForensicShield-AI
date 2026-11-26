@@ -1,0 +1,33 @@
+{
+  "dataset": "SILRAD",
+  "model_version": "fs-silrad-rf-v1.0",
+  "task": "Ransomware versus goodware classification",
+  "training_records": 32312,
+  "testing_records": 140964,
+  "accuracy": 0.9656011463919866,
+  "precision": 0.967147096227215,
+  "recall": 0.6678375411635565,
+  "f1_score": 0.7900956668542487,
+  "mcc": 0.7877684017043179,
+  "false_positive_rate": 0.0024352115884649526,
+  "confusion_matrix": [
+    [
+      126989,
+      310
+    ],
+    [
+      4539,
+      9126
+    ]
+  ],
+  "model_sha256": "07a7d85a900fe90ec313d9bb67f9358e136b6269758281e18adbbe2f72f5908c",
+  "elapsed_seconds": 14.679,
+  "evaluation_status": "CLEANED_HELD_OUT_EVALUATION",
+  "limitations": [
+    "Labels represent ransomware and goodware.",
+    "Not anti-forensic technique classification.",
+    "Exact feature overlap removed.",
+    "Family-level and session-level independence not established.",
+    "Original feature encoding provenance requires verification."
+  ]
+}

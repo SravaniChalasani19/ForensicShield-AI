@@ -1,0 +1,33 @@
+{
+  "experiment": "Reduced-feature exploratory ablation",
+  "removed_features": [
+    "ProcessId",
+    "ProcessGuid"
+  ],
+  "remaining_features": 34,
+  "training_records": 27578,
+  "testing_records": 122410,
+  "conflicting_groups_removed": 725,
+  "overlapping_test_records_removed": 374,
+  "remaining_overlap": 0,
+  "accuracy": 0.9514010293276693,
+  "precision": 0.7239508536779958,
+  "recall": 0.5181589767016903,
+  "f1_score": 0.6040071889769021,
+  "confusion_matrix": [
+    [
+      111924,
+      1730
+    ],
+    [
+      4219,
+      4537
+    ]
+  ],
+  "limitations": [
+    "Previously examined test dataset.",
+    "Family and session independence not established.",
+    "Different test population from original model.",
+    "Ransomware classification only."
+  ]
+}

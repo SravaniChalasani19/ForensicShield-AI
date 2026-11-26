@@ -1,0 +1,22 @@
+{
+  "datasets": [
+    {
+      "file": "dfrws_shap_explanations.json",
+      "total": 11,
+      "valid": 11,
+      "missing": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "file": "hackthebox_shap_explanations.json",
+      "total": 2377,
+      "valid": 2377,
+      "missing": 0,
+      "coverage_percent": 100.0
+    }
+  ],
+  "total_explanations": 2388,
+  "valid_explanations": 2388,
+  "missing_explanations": 0,
+  "scope": "External ML candidate token explanation coverage, not detection accuracy"
+}

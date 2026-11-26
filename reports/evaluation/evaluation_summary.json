@@ -1,0 +1,48 @@
+{
+  "evaluated": true,
+  "status": "EVALUATED",
+  "dataset_name": "Cleaned Synthetic Held-Out Test Dataset",
+  "sample_counts": {
+    "total": 29,
+    "normal": 6,
+    "suspicious": 23
+  },
+  "metrics": {
+    "accuracy": 0.931,
+    "precision": 1.0,
+    "recall": 0.913,
+    "f1_score": 0.9545,
+    "false_positive_rate": 0.0,
+    "true_positives": 21,
+    "false_positives": 0,
+    "true_negatives": 6,
+    "false_negatives": 2,
+    "confusion_matrix": [
+      [
+        6,
+        0
+      ],
+      [
+        2,
+        21
+      ]
+    ]
+  },
+  "error_analysis": {
+    "false_positives_count": 0,
+    "false_negatives_count": 2,
+    "sample_false_positives": [],
+    "sample_false_negatives": [
+      {
+        "index": 2,
+        "text": "admin_tool: dmesg -c dmesg -c",
+        "score": 0.1509
+      },
+      {
+        "index": 24,
+        "text": "admin_tool: wmic shadowcopy delete wmic shadowcopy delete",
+        "score": 0.3617
+      }
+    ]
+  }
+}

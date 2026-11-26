@@ -1,0 +1,72 @@
+{
+  "dataset": "Cleaned Synthetic Held-Out Test Dataset",
+  "test_records": 29,
+  "normal_records": 6,
+  "suspicious_records": 23,
+  "evaluation_type": "EXPLORATORY_SYNTHETIC_COMPARISON",
+  "hybrid_method": "Logical OR",
+  "results": {
+    "Rule-only": {
+      "accuracy": 0.896551724137931,
+      "precision": 1.0,
+      "recall": 0.8695652173913043,
+      "f1_score": 0.9302325581395349,
+      "false_positive_rate": 0.0,
+      "confusion_matrix": [
+        [
+          6,
+          0
+        ],
+        [
+          3,
+          20
+        ]
+      ],
+      "processing_seconds": 0.0018413000070722774
+    },
+    "NLP-only": {
+      "accuracy": 0.9310344827586207,
+      "precision": 1.0,
+      "recall": 0.9130434782608695,
+      "f1_score": 0.9545454545454546,
+      "false_positive_rate": 0.0,
+      "confusion_matrix": [
+        [
+          6,
+          0
+        ],
+        [
+          2,
+          21
+        ]
+      ],
+      "processing_seconds": 0.46085499999753665
+    },
+    "Hybrid": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "false_positive_rate": 0.0,
+      "confusion_matrix": [
+        [
+          6,
+          0
+        ],
+        [
+          0,
+          23
+        ]
+      ],
+      "processing_seconds": 0.46270459999504965
+    }
+  },
+  "limitations": [
+    "Synthetic test records only",
+    "Similar-template leakage risk remains",
+    "Previously examined test dataset",
+    "Rules updated during project development",
+    "Timing is a single-run estimate",
+    "Independent external validation not established"
+  ]
+}
