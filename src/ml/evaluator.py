@@ -10,7 +10,7 @@ from sklearn.metrics import (
     confusion_matrix,
 )
 
-from config import REPORTS_DIR
+from config import BASE_DIR, REPORTS_DIR
 from src.ml.model_inference import ForensicModelInference
 
 EVAL_OUTPUT_DIR = REPORTS_DIR / "evaluation"
@@ -26,9 +26,9 @@ class ForensicEvaluator:
     def get_evaluation_status(cls) -> Dict[str, Any]:
         """Return evaluation metrics and independent validation status."""
 
-        if EVAL_SUMMARY_PATH.exists():
+        if (BASE_DIR / "reports" / "evaluation" / "evaluation_summary.json").exists():
             try:
-                with open(EVAL_SUMMARY_PATH, "r", encoding="utf-8") as f:
+                with open(BASE_DIR / "reports" / "evaluation" / "evaluation_summary.json", "r", encoding="utf-8") as f:
                     data = json.load(f)
 
                 data["external_benchmark_status"] = "NOT_EVALUATED"

@@ -24,7 +24,7 @@ from reportlab.platypus import (
     PageBreak,
 )
 
-from config import REPORTS_DIR, LEGAL_DISCLAIMER, APP_NAME, MODEL_VERSION
+from config import BASE_DIR, REPORTS_DIR, LEGAL_DISCLAIMER, APP_NAME, MODEL_VERSION
 from src.storage.db import get_db_connection
 from src.audit.audit_trail import AuditTrail
 from src.explainability.shap_explainer import ForensicShapExplainer, SHAP_CAVEAT
@@ -587,7 +587,7 @@ class ForensicPdfReportGenerator:
             body_style
         ))
 
-        research_dir = REPORTS_DIR / "evaluation"
+        research_dir = BASE_DIR / "reports" / "evaluation"
 
         def read_research(relative_path):
 
