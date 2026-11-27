@@ -161,7 +161,7 @@ async function handleCreateCase(event) {
         createdCase.examiner
       );
 
-      loadDashboardCases();
+      window.location.reload();
 
     } else {
       alert(`Error creating case: ${data.message || "Unable to create case."}`);
